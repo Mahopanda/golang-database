@@ -35,7 +35,7 @@ type Serializer interface {
 type JSONSerializer struct{}
 
 func (j *JSONSerializer) Serialize(v interface{}) ([]byte, error) {
-	return json.MarshalIndent(v, "", "  ")
+	return json.Marshal(v)
 }
 
 func (j *JSONSerializer) Deserialize(data []byte, v interface{}) error {
