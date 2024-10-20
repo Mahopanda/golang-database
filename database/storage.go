@@ -2,35 +2,66 @@ package database
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
-// Storage 介面，定義資料存取的基本操作
-type Storage interface {
-	Write(collection, resource string, v interface{}) error
+// Reader 介面，定義讀取操作
+type Reader interface {
 	Read(collection, resource string, v interface{}) error
 	ReadAll(collection string) ([]string, error)
+}
+
+// Writer 介面，定義寫入操作
+type Writer interface {
+	Write(collection, resource string, v interface{}) error
 	Delete(collection, resource string) error
+}
+
+// Storage 接口
+type Storage interface {
+	Reader
+	Writer
+}
+
+// Serializer 定義序列化接口
+type Serializer interface {
+	Serialize(v interface{}) ([]byte, error)
+	Deserialize(data []byte, v interface{}) error
+}
+
+// JSONSerializer 負責 JSON 格式的序列化
+type JSONSerializer struct{}
+
+func (j *JSONSerializer) Serialize(v interface{}) ([]byte, error) {
+	return json.Marshal(v)
+}
+
+func (j *JSONSerializer) Deserialize(data []byte, v interface{}) error {
+	return json.Unmarshal(data, v)
 }
 
 // FileStore 負責具體的文件操作
 type FileStore struct {
-	dir string
-	log Logger
+	dir        string
+	serializer Serializer
+	mu         sync.Mutex // 新增互斥鎖，保護並發訪問
 }
 
-// NewFileStore 初始化一個新的 FileStore，負責文件存取
-func NewFileStore(dir string, log Logger) *FileStore {
+// NewFileStore 初始化 FileStore
+func NewFileStore(dir string, serializer Serializer) *FileStore {
 	return &FileStore{
-		dir: filepath.Clean(dir),
-		log: log,
+		dir:        filepath.Clean(dir),
+		serializer: serializer,
 	}
 }
 
 // Write 實作將數據寫入文件的操作
 func (fs *FileStore) Write(collection, resource string, v interface{}) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	dir := filepath.Join(fs.dir, collection)
 	fnlPath := filepath.Join(dir, resource+".json")
 	tmpPath := fnlPath + ".tmp"
@@ -39,46 +70,48 @@ func (fs *FileStore) Write(collection, resource string, v interface{}) error {
 		return err
 	}
 
-	// 將 interface{} 序列化為 JSON
-	b, err := json.MarshalIndent(v, "", "  ")
+	b, err := fs.serializer.Serialize(v)
 	if err != nil {
 		return err
 	}
 
-	// 將結果寫入臨時文件
-	if err := ioutil.WriteFile(tmpPath, b, 0644); err != nil {
+	if err := os.WriteFile(tmpPath, b, 0644); err != nil {
 		return err
 	}
 
-	// 確保寫入過程的原子性，重命名臨時文件
 	return os.Rename(tmpPath, fnlPath)
 }
 
 // Read 實作從文件中讀取數據
 func (fs *FileStore) Read(collection, resource string, v interface{}) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	path := filepath.Join(fs.dir, collection, resource+".json")
 	if _, err := os.Stat(path); err != nil {
 		return err
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	// 將文件內容解析並填充到傳入的 v 變量
-	return json.Unmarshal(b, v)
+	return fs.serializer.Deserialize(b, v)
 }
 
 // ReadAll 實作讀取集合中的所有文件
 func (fs *FileStore) ReadAll(collection string) ([]string, error) {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	dir := filepath.Join(fs.dir, collection)
 
 	if _, err := os.Stat(dir); err != nil {
 		return nil, err
 	}
 
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +121,7 @@ func (fs *FileStore) ReadAll(collection string) ([]string, error) {
 		if file.IsDir() {
 			continue
 		}
-		b, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
+		b, err := os.ReadFile(filepath.Join(dir, file.Name()))
 		if err != nil {
 			return nil, err
 		}
@@ -99,6 +132,9 @@ func (fs *FileStore) ReadAll(collection string) ([]string, error) {
 
 // Delete 實作刪除指定文件
 func (fs *FileStore) Delete(collection, resource string) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	path := filepath.Join(fs.dir, collection, resource+".json")
 	return os.Remove(path)
 }

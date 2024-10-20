@@ -8,8 +8,16 @@ import (
 
 func TestDriver_WriteRead(t *testing.T) {
 	logger := database.NewConsoleLogger()
-	store := database.NewFileStore("./testdata", logger)
-	driver := database.NewDriver(store, logger)
+
+	// 初始化 JSONSerializer 並傳遞給 NewFileStore
+	serializer := &database.JSONSerializer{}
+	store := database.NewFileStore("./testdata", serializer)
+
+	// 初始化鎖管理器
+	lockManager := database.NewLockManager()
+
+	// 傳入 store、logger 和 lockManager 初始化 driver
+	driver := database.NewDriver(store, lockManager, logger)
 
 	// 使用 map[string]interface{} 來表示動態數據
 	user := map[string]interface{}{
