@@ -17,7 +17,7 @@ func TestDriver_WriteRead(t *testing.T) {
 	lockManager := database.NewLockManager()
 
 	// 傳入 store、logger 和 lockManager 初始化 driver
-	driver := database.NewDriver(store, logger, lockManager)
+	driver := database.NewDriver(store, lockManager, logger)
 
 	// 使用 map[string]interface{} 來表示動態數據
 	user := map[string]interface{}{

@@ -18,7 +18,7 @@ func main() {
 	store := database.NewFileStore("storage/", serializer)
 	lockManager := database.NewLockManager()
 	// 初始化資料庫驅動
-	db := database.NewDriver(store, logger,lockManager)
+	db := database.NewDriver(store, lockManager, logger)
 
 	// 初始化使用者數據
 	employee := []map[string]interface{}{

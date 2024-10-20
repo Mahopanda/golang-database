@@ -41,8 +41,10 @@ This project is a simple key-value store database implemented in Go, inspired by
 
 ```go
 logger := database.NewConsoleLogger()
-store := database.NewFileStore("./storage", logger)
-db := database.NewDriver(store, logger)
+serializer := &database.JSONSerializer{}
+store := database.NewFileStore("./storage", serializer)
+db := database.NewDriver(store, logger, database.NewLockManager())
+
 ```
 
 2. Insert Data:

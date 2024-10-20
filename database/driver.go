@@ -13,11 +13,11 @@ type Driver struct {
 }
 
 // NewDriver 初始化一個新的 Driver
-func NewDriver(store Storage, log Logger, lockManager LockManager) *Driver {
+func NewDriver(store Storage, lockManager LockManager, log Logger) *Driver {
 	return &Driver{
 		store:       store,
-		log:         log,
 		lockManager: lockManager,
+		log:         log,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // Reader 介面，定義讀取操作
@@ -45,6 +46,7 @@ func (j *JSONSerializer) Deserialize(data []byte, v interface{}) error {
 type FileStore struct {
 	dir        string
 	serializer Serializer
+	mu         sync.Mutex // 新增互斥鎖，保護並發訪問
 }
 
 // NewFileStore 初始化 FileStore
@@ -57,6 +59,9 @@ func NewFileStore(dir string, serializer Serializer) *FileStore {
 
 // Write 實作將數據寫入文件的操作
 func (fs *FileStore) Write(collection, resource string, v interface{}) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	dir := filepath.Join(fs.dir, collection)
 	fnlPath := filepath.Join(dir, resource+".json")
 	tmpPath := fnlPath + ".tmp"
@@ -79,6 +84,9 @@ func (fs *FileStore) Write(collection, resource string, v interface{}) error {
 
 // Read 實作從文件中讀取數據
 func (fs *FileStore) Read(collection, resource string, v interface{}) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	path := filepath.Join(fs.dir, collection, resource+".json")
 	if _, err := os.Stat(path); err != nil {
 		return err
@@ -94,6 +102,9 @@ func (fs *FileStore) Read(collection, resource string, v interface{}) error {
 
 // ReadAll 實作讀取集合中的所有文件
 func (fs *FileStore) ReadAll(collection string) ([]string, error) {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	dir := filepath.Join(fs.dir, collection)
 
 	if _, err := os.Stat(dir); err != nil {
@@ -121,6 +132,9 @@ func (fs *FileStore) ReadAll(collection string) ([]string, error) {
 
 // Delete 實作刪除指定文件
 func (fs *FileStore) Delete(collection, resource string) error {
+	fs.mu.Lock()         // 加鎖
+	defer fs.mu.Unlock() // 確保操作完成後解鎖
+
 	path := filepath.Join(fs.dir, collection, resource+".json")
 	return os.Remove(path)
 }
