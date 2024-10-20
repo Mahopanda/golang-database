@@ -95,9 +95,7 @@ go test ./...
 ├── database/           # Core logic for the key-value database
 │   ├── driver.go       # Handles high-level operations and concurrency control
 │   ├── storage.go      # File-based storage implementation
-│   ├── logger.go       # Logger implementation
-│   └── model.go        # (optional) If used, this file holds specific data models
+│   └── logger.go       # Logger implementation
 ├── test/               # Test cases for the database
-├── main.go             # Example usage of the key-value database
-└── README.md           # This file
+└── main.go             # Example usage of the key-value database
 ```
