@@ -8,8 +8,11 @@ import (
 )
 
 func TestFileStore_WriteRead(t *testing.T) {
-	logger := database.NewConsoleLogger()
-	store := database.NewFileStore("./testdata", logger)
+	// logger := database.NewConsoleLogger()
+
+	// 使用 JSONSerializer 並傳遞給 NewFileStore
+	serializer := &database.JSONSerializer{}
+	store := database.NewFileStore("./testdata", serializer)
 	defer os.RemoveAll("./testdata") // 測試結束後刪除測試資料夾
 
 	// 使用 map[string]interface{} 來表示動態數據

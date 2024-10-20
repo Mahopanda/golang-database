@@ -13,12 +13,12 @@ const Version = "0.0.1"
 func main() {
 
 	logger := database.NewConsoleLogger()
-
+	serializer := &database.JSONSerializer{}
 	// 初始化文件存儲
-	store := database.NewFileStore("storage/", logger)
-
+	store := database.NewFileStore("storage/", serializer)
+	lockManager := database.NewLockManager()
 	// 初始化資料庫驅動
-	db := database.NewDriver(store, logger)
+	db := database.NewDriver(store, logger,lockManager)
 
 	// 初始化使用者數據
 	employee := []map[string]interface{}{

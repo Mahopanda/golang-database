@@ -95,7 +95,9 @@ go test ./...
 ├── database/           # Core logic for the key-value database
 │   ├── driver.go       # Handles high-level operations and concurrency control
 │   ├── storage.go      # File-based storage implementation
+│   ├── lock_manager.go # 包含 LockManager 的邏輯
 │   └── logger.go       # Logger implementation
+│   └── serializer.go   # 包含 Serializer 的邏輯
 ├── test/               # Test cases for the database
 └── main.go             # Example usage of the key-value database
 ```
