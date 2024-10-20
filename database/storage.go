@@ -39,17 +39,18 @@ func (fs *FileStore) Write(collection, resource string, v interface{}) error {
 		return err
 	}
 
+	// 將 interface{} 序列化為 JSON
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	b = append(b, []byte("\n")...)
-
+	// 將結果寫入臨時文件
 	if err := ioutil.WriteFile(tmpPath, b, 0644); err != nil {
 		return err
 	}
 
+	// 確保寫入過程的原子性，重命名臨時文件
 	return os.Rename(tmpPath, fnlPath)
 }
 
@@ -65,6 +66,7 @@ func (fs *FileStore) Read(collection, resource string, v interface{}) error {
 		return err
 	}
 
+	// 將文件內容解析並填充到傳入的 v 變量
 	return json.Unmarshal(b, v)
 }
 

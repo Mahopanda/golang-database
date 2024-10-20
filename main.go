@@ -15,25 +15,91 @@ func main() {
 	logger := database.NewConsoleLogger()
 
 	// 初始化文件存儲
-	fileStore := database.NewFileStore("storage/", logger)
+	store := database.NewFileStore("storage/", logger)
 
 	// 初始化資料庫驅動
-	db := database.NewDriver(fileStore, logger)
+	db := database.NewDriver(store, logger)
 
 	// 初始化使用者數據
-	employee := []database.User{
-		{"John", "25", "1234567890", "Google", database.Address{"Bangalore", "Karnataka", "India", "560001"}},
-		{"Doe", "30", "1234567890", "Microsoft", database.Address{"Hyderabad", "Telangana", "India", "500001"}},
-		{"Smith", "35", "1234567890", "Amazon", database.Address{"Chennai", "Tamilnadu", "India", "600001"}},
-		{"Tom", "40", "1234567890", "Facebook", database.Address{"Mumbai", "Maharashtra", "India", "400001"}},
-		{"Jerry", "45", "1234567890", "Apple", database.Address{"Pune", "Maharashtra", "India", "411001"}},
-		{"Mickey", "50", "1234567890", "Tesla", database.Address{"Kolkata", "West Bengal", "India", "700001"}},
+	employee := []map[string]interface{}{
+		{
+			"Name":    "John",
+			"Age":     25,
+			"Contact": "1234567890",
+			"Company": "Google",
+			"Address": map[string]interface{}{
+				"City":    "Bangalore",
+				"State":   "Karnataka",
+				"Country": "India",
+				"Pincode": "560001",
+			},
+		},
+		{
+			"Name":    "Doe",
+			"Age":     30,
+			"Contact": "1234567890",
+			"Company": "Microsoft",
+			"Address": map[string]interface{}{
+				"City":    "Hyderabad",
+				"State":   "Telangana",
+				"Country": "India",
+				"Pincode": "500001",
+			},
+		},
+		{
+			"Name":    "Smith",
+			"Age":     35,
+			"Contact": "1234567890",
+			"Company": "Amazon",
+			"Address": map[string]interface{}{
+				"City":    "Chennai",
+				"State":   "Tamilnadu",
+				"Country": "India",
+				"Pincode": "600001",
+			},
+		},
+		{
+			"Name":    "Tom",
+			"Age":     40,
+			"Contact": "1234567890",
+			"Company": "Facebook",
+			"Address": map[string]interface{}{
+				"City":    "Mumbai",
+				"State":   "Maharashtra",
+				"Country": "India",
+				"Pincode": "400001",
+			},
+		},
+		{
+			"Name":    "Jerry",
+			"Age":     45,
+			"Contact": "1234567890",
+			"Company": "Apple",
+			"Address": map[string]interface{}{
+				"City":    "Pune",
+				"State":   "Maharashtra",
+				"Country": "India",
+				"Pincode": "411001",
+			},
+		},
+		{
+			"Name":    "Mickey",
+			"Age":     50,
+			"Contact": "1234567890",
+			"Company": "Tesla",
+			"Address": map[string]interface{}{
+				"City":    "Kolkata",
+				"State":   "West Bengal",
+				"Country": "India",
+				"Pincode": "700001",
+			},
+		},
 	}
 
 	// 將使用者數據寫入資料庫
 	for _, emp := range employee {
-		if err := db.Write("users", emp.Name, emp); err != nil {
-			logger.Error("Error writing user: %s, %v", emp.Name, err)
+		if err := db.Write("users", emp["Name"].(string), emp); err != nil {
+			logger.Error("Error writing user: %s, %v", emp["Name"], err)
 		}
 	}
 
@@ -50,11 +116,26 @@ func main() {
 
 	// 輸出所有使用者數據
 	for _, record := range records {
-		var user database.User
+		var user map[string]interface{}
 		if err := json.Unmarshal([]byte(record), &user); err != nil {
 			logger.Error("Error unmarshalling user: %v", err)
 		}
 		fmt.Printf("User: %+v\n", user)
 	}
 
+	// 查詢所有年齡為 30 的使用者
+	results, err := db.Query("users", func(data map[string]interface{}) bool {
+		age, ok := data["Age"].(float64) // JSON 解析時，數值類型會被解釋為 float64
+		return ok && age == 30
+	})
+
+	if err != nil {
+		logger.Error("Error querying users: %v", err)
+	}
+
+	// 打印查詢結果
+	fmt.Println("Users with Age 30:")
+	for _, user := range results {
+		fmt.Printf("User: %+v\n", user)
+	}
 }

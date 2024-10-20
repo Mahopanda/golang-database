@@ -1,6 +1,8 @@
 package database
 
 import (
+	"encoding/json"
+	"fmt"
 	"sync"
 )
 
@@ -72,4 +74,34 @@ func (d *Driver) getOrCreateMutex(collection string) *sync.Mutex {
 		d.mutexs[collection] = m
 	}
 	return m
+}
+
+// Query 函數從指定集合中查詢符合條件的數據
+// filter 是一個函數，用來決定每一筆數據是否符合條件
+func (d *Driver) Query(collection string, filter func(map[string]interface{}) bool) ([]map[string]interface{}, error) {
+	// 從底層存儲中讀取所有數據
+	records, err := d.store.ReadAll(collection)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []map[string]interface{}
+
+	// 遍歷所有數據並根據 filter 函數進行篩選
+	for _, record := range records {
+		var data map[string]interface{}
+
+		// 將每一條記錄反序列化為動態數據結構 map[string]interface{}
+		err := json.Unmarshal([]byte(record), &data)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshaling record: %v", err)
+		}
+
+		// 如果數據符合 filter 條件，將其添加到結果中
+		if filter(data) {
+			results = append(results, data)
+		}
+	}
+
+	return results, nil
 }
