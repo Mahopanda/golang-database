@@ -1,2 +1,14 @@
-# 忽略 storage 資料夾及其所有內容
+# Go build artifacts
+*.exe
+*.out
+*.o
+
+# Go vendor directory (optional if you use vendoring)
+vendor/
+
+# Ignore storage files and test data
 storage/
+testdata/
+
+# OS-specific files
+.DS_Store
