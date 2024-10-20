@@ -1,16 +1,18 @@
-package main
+package main_test
 
 import (
 	"os"
 	"testing"
+
+	"github.com/Mahopanda/golang-database/database"
 )
 
 func TestFileStore_WriteRead(t *testing.T) {
-	logger := NewConsoleLogger()
-	store := NewFileStore("./testdata", logger)
+	logger := database.NewConsoleLogger()
+	store := database.NewFileStore("./testdata", logger)
 	defer os.RemoveAll("./testdata")
 
-	user := User{
+	user := database.User{
 		Name: "John",
 		Age:  "25",
 	}
@@ -20,7 +22,7 @@ func TestFileStore_WriteRead(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	var result User
+	var result database.User
 	err = store.Read("users", "John", &result)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)

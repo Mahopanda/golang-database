@@ -1,15 +1,17 @@
-package main
+package main_test
 
 import (
 	"testing"
+
+	"github.com/Mahopanda/golang-database/database"
 )
 
 func TestDriver_WriteRead(t *testing.T) {
-	logger := NewConsoleLogger()
-	store := NewFileStore("./testdata", logger)
-	driver := NewDriver(store, logger)
+	logger := database.NewConsoleLogger()
+	store := database.NewFileStore("./testdata", logger)
+	driver := database.NewDriver(store, logger)
 
-	user := User{
+	user := database.User{
 		Name: "John",
 		Age:  "25",
 	}
@@ -19,7 +21,7 @@ func TestDriver_WriteRead(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	var result User
+	var result database.User
 	err = driver.Read("users", "John", &result)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)

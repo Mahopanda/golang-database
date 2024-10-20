@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/Mahopanda/golang-database/database"
 )
 
 const Version = "0.0.1"
@@ -10,22 +12,22 @@ const Version = "0.0.1"
 // 主函數
 func main() {
 
-	logger := NewConsoleLogger()
+	logger := database.NewConsoleLogger()
 
 	// 初始化文件存儲
-	fileStore := NewFileStore("storage/", logger)
+	fileStore := database.NewFileStore("storage/", logger)
 
 	// 初始化資料庫驅動
-	db := NewDriver(fileStore, logger)
+	db := database.NewDriver(fileStore, logger)
 
 	// 初始化使用者數據
-	employee := []User{
-		{"John", "25", "1234567890", "Google", Address{"Bangalore", "Karnataka", "India", "560001"}},
-		{"Doe", "30", "1234567890", "Microsoft", Address{"Hyderabad", "Telangana", "India", "500001"}},
-		{"Smith", "35", "1234567890", "Amazon", Address{"Chennai", "Tamilnadu", "India", "600001"}},
-		{"Tom", "40", "1234567890", "Facebook", Address{"Mumbai", "Maharashtra", "India", "400001"}},
-		{"Jerry", "45", "1234567890", "Apple", Address{"Pune", "Maharashtra", "India", "411001"}},
-		{"Mickey", "50", "1234567890", "Tesla", Address{"Kolkata", "West Bengal", "India", "700001"}},
+	employee := []database.User{
+		{"John", "25", "1234567890", "Google", database.Address{"Bangalore", "Karnataka", "India", "560001"}},
+		{"Doe", "30", "1234567890", "Microsoft", database.Address{"Hyderabad", "Telangana", "India", "500001"}},
+		{"Smith", "35", "1234567890", "Amazon", database.Address{"Chennai", "Tamilnadu", "India", "600001"}},
+		{"Tom", "40", "1234567890", "Facebook", database.Address{"Mumbai", "Maharashtra", "India", "400001"}},
+		{"Jerry", "45", "1234567890", "Apple", database.Address{"Pune", "Maharashtra", "India", "411001"}},
+		{"Mickey", "50", "1234567890", "Tesla", database.Address{"Kolkata", "West Bengal", "India", "700001"}},
 	}
 
 	// 將使用者數據寫入資料庫
@@ -48,7 +50,7 @@ func main() {
 
 	// 輸出所有使用者數據
 	for _, record := range records {
-		var user User
+		var user database.User
 		if err := json.Unmarshal([]byte(record), &user); err != nil {
 			logger.Error("Error unmarshalling user: %v", err)
 		}

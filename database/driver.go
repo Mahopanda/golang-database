@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"sync"
@@ -28,8 +28,8 @@ func (d *Driver) Write(collection, resource string, v interface{}) error {
 	// 因此，我們會先使用全局互斥鎖來鎖定對 mutexs map的操作
 	mutex := d.getOrCreateMutex(collection)
 	// 鎖定這個集合專用的互斥鎖，保護該集合內的操作，確保同一時間只有一個協程可以寫入該集合
-	mutex.Lock()// 開始鎖定集合的互斥鎖，保證接下來的操作是安全的
-	defer mutex.Unlock()// 在寫入操作完成後解鎖，允許其他協程訪問該集合
+	mutex.Lock()         // 開始鎖定集合的互斥鎖，保證接下來的操作是安全的
+	defer mutex.Unlock() // 在寫入操作完成後解鎖，允許其他協程訪問該集合
 
 	return d.store.Write(collection, resource, v)
 }

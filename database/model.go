@@ -1,4 +1,5 @@
-package main
+package database
+
 
 import "encoding/json"
 
