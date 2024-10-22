@@ -1,6 +1,6 @@
 # Go Key-Value Database
 
-This project is a simple key-value store database implemented in Go, inspired by NoSQL databases like MongoDB. It supports dynamic data storage using `map[string]interface{}` and provides basic CRUD (Create, Read, Update, Delete) operations, along with query functionality.
+This project is a simple key-value store database implemented in Go, inspired by NoSQL databases such as MongoDB. It allows for dynamic data storage using map[string]interface{} and supports basic CRUD (Create, Read, Update, Delete) operations, along with query capabilities. Currently, the data is stored only in JSON files, as a key-value storage engine, like Bitcask, has not yet been implemented.
 
 ## Features
 
